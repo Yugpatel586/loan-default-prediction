@@ -71,4 +71,4 @@ Key observations include:
 - Numerical features have valid ranges
 - Target variable is imbalanced
 - Most numerical features have weak correlations with the target variable
-- The dataset appears to be synthetically generated but is appropriate for educational machine learning projects.
+- The dataset appears to be synthetically generated but is appropriate for educational machine learning projects.   
