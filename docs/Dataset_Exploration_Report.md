@@ -71,4 +71,29 @@ Key observations include:
 - Numerical features have valid ranges
 - Target variable is imbalanced
 - Most numerical features have weak correlations with the target variable
-- The dataset appears to be synthetically generated but is appropriate for educational machine learning projects.   
+- The dataset appears to be synthetically generated but is appropriate for educational machine learning projects. 
+## Data Preprocessing
+
+### Feature Classification
+
+- Identified numerical and categorical features.
+- Numerical features include Age, Income, Loan Amount, Credit Score, Interest Rate, Loan Term, etc.
+- Categorical features include Education, Employment Type, Marital Status, Loan Purpose, HasMortgage, HasDependents, and HasCoSigner.
+
+### Label Encoding
+
+- Applied Label Encoding to all categorical features.
+- Converted text categories into numerical values.
+- Stored LabelEncoder objects for future use during prediction.
+
+## Feature Scaling
+
+Feature scaling was performed using StandardScaler from Scikit-learn.
+
+Purpose:
+- Normalize feature values to a common scale.
+- Improve the performance of machine learning algorithms that are sensitive to feature magnitude.
+
+Observations:
+- The transformed features have approximately zero mean and unit standard deviation.
+- The dataset is now ready for model training.
