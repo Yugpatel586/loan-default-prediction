@@ -93,3 +93,8 @@ Both features appear clean and suitable for machine learning. The dataset shows 
 ### Feature vs Target Analysis
 - Compared Credit Score, Income, and Loan Amount with the Default variable using box plots.
 - These visualizations help identify patterns that may influence loan default.
+
+### Data Preprocessing – Step 1
+Removed the LoanID column.
+Reason: LoanID is a unique identifier and does not contribute to predicting loan default.
+Removing non-informative features helps reduce unnecessary complexity and prevents the model from learning irrelevant patterns.
