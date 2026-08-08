@@ -97,3 +97,45 @@ Purpose:
 Observations:
 - The transformed features have approximately zero mean and unit standard deviation.
 - The dataset is now ready for model training.
+## Train-Test Split
+
+The dataset was divided into training and testing sets using an 80:20 ratio.
+
+Reason:
+- 80% of the data was used to train the machine learning model.
+- 20% of the data was reserved for evaluating model performance on unseen data.
+
+Parameters Used:
+- test_size = 0.20
+- random_state = 42
+- stratify = y
+
+Using stratified sampling preserved the original class distribution of the target variable in both training and testing datasets.
+## Train-Test Split
+
+The dataset was divided into training and testing sets using an 80:20 ratio.
+
+Training Set:
+- 204,277 records
+
+Testing Set:
+- 51,070 records
+
+Parameters Used:
+- test_size = 0.20
+- random_state = 42
+- stratify = y
+
+This ensures reproducible results while maintaining the same class distribution in both datasets.
+
+---
+
+## Saving Preprocessing Objects
+
+The fitted StandardScaler and LabelEncoder objects were saved using Joblib.
+
+Saved Files:
+- scaler.pkl
+- label_encoders.pkl
+
+These files will be reused during model deployment to ensure that user input is transformed in the same way as the training data.
