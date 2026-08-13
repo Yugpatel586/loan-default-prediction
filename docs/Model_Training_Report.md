@@ -51,7 +51,7 @@ Weighted Average:
 - Logistic Regression achieved an overall accuracy of 89%.
 - The model predicted the "No Default" class with high accuracy.
 - The recall for the "Default" class was very low (3%), indicating that the model failed to identify most default cases.
-- This occurred because the dataset is highly imbalanced, with significantly more "No Default" samples than "Default" samples.
+- - The low recall for the "Default" class is associated with the class imbalance in the dataset, where the "No Default" class has substantially more samples than the "Default" class.
 - Although the overall accuracy appears high, the model is not suitable as the final model because accurately detecting default cases is the primary objective of this project.
 
 ---
