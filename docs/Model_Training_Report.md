@@ -58,4 +58,4 @@ Weighted Average:
 
 ## Conclusion
 
-Logistic Regression serves as a good baseline model but is not the best choice for this dataset. More advanced models such as Decision Tree and Random Forest are expected to perform better, particularly in identifying loan default cases.
+Logistic Regression serves as a good baseline model but is not the best choice for this dataset. More advanced models such as Decision Tree and Random Forest are expected to perform better, particularly in identifying loan default cases.w
