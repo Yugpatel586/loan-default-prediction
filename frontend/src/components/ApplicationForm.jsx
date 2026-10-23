@@ -47,70 +47,306 @@ function ApplicationForm({ onSubmit, loading }) {
     onSubmit(applicant);
   };
 
-  const fields = [
-    { name: "Age", label: "Age", type: "number" },
-    { name: "Income", label: "Annual Income", type: "number" },
-    { name: "LoanAmount", label: "Loan Amount", type: "number" },
-    { name: "CreditScore", label: "Credit Score", type: "number" },
-    { name: "MonthsEmployed", label: "Months Employed", type: "number" },
-    { name: "NumCreditLines", label: "Number of Credit Lines", type: "number" },
-    { name: "InterestRate", label: "Interest Rate (%)", type: "number" },
-    { name: "LoanTerm", label: "Loan Term (months)", type: "number" },
-    { name: "DTIRatio", label: "Debt-to-Income Ratio", type: "number", step: "0.01" },
-  ];
-
-  const categories = {
-    Education: ["High School", "Bachelor's", "Master's", "PhD"],
-    EmploymentType: ["Full-time", "Part-time", "Self-employed", "Unemployed"],
-    MaritalStatus: ["Single", "Married", "Divorced"],
-    HasMortgage: ["Yes", "No"],
-    HasDependents: ["Yes", "No"],
-    LoanPurpose: ["Home", "Auto", "Education", "Business", "Other"],
-    HasCoSigner: ["Yes", "No"],
+  // --- SVG icons for section headers ---
+  const sectionIcons = {
+    personal: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <circle cx="12" cy="7" r="4" />
+      </svg>
+    ),
+    financial: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="1" x2="12" y2="23" />
+        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+      </svg>
+    ),
+    employment: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+      </svg>
+    ),
+    additional: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M12 16v-4" />
+        <path d="M12 8h.01" />
+      </svg>
+    ),
+    predict: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+      </svg>
+    ),
   };
 
   return (
     <form onSubmit={handleSubmit} className="applicant-form">
-      <h2>Applicant Details</h2>
-
-      <div className="form-grid">
-        {fields.map((field) => (
-          <div className="form-group" key={field.name}>
-            <label htmlFor={field.name}>{field.label}</label>
+      {/* Personal Information */}
+      <div className="form-section">
+        <h3 className="form-section-title">
+          {sectionIcons.personal}
+          Personal Information
+        </h3>
+        <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="Age">Age</label>
             <input
-              id={field.name}
-              type={field.type}
-              name={field.name}
-              value={formData[field.name]}
+              id="Age"
+              type="number"
+              name="Age"
+              value={formData.Age}
               onChange={handleChange}
-              step={field.step || "any"}
+              step="any"
               required
+              placeholder="e.g. 25"
             />
           </div>
-        ))}
-
-        {Object.entries(categories).map(([name, options]) => (
-          <div className="form-group" key={name}>
-            <label htmlFor={name}>{name}</label>
+          <div className="form-group">
+            <label htmlFor="Education">Education</label>
             <select
-              id={name}
-              name={name}
-              value={formData[name]}
+              id="Education"
+              name="Education"
+              value={formData.Education}
               onChange={handleChange}
             >
-              {options.map((option) => (
-                <option key={option} value={option}>
-                  {option}
-                </option>
+              {["High School", "Bachelor's", "Master's", "PhD"].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
               ))}
             </select>
           </div>
-        ))}
+          <div className="form-group">
+            <label htmlFor="MaritalStatus">Marital Status</label>
+            <select
+              id="MaritalStatus"
+              name="MaritalStatus"
+              value={formData.MaritalStatus}
+              onChange={handleChange}
+            >
+              {["Single", "Married", "Divorced"].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="HasDependents">Has Dependents</label>
+            <select
+              id="HasDependents"
+              name="HasDependents"
+              value={formData.HasDependents}
+              onChange={handleChange}
+            >
+              {["Yes", "No"].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+        </div>
       </div>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Analyzing..." : "Predict Default Risk"}
-      </button>
+      {/* Financial Information */}
+      <div className="form-section">
+        <h3 className="form-section-title">
+          {sectionIcons.financial}
+          Financial Information
+        </h3>
+        <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="Income">Annual Income ($)</label>
+            <input
+              id="Income"
+              type="number"
+              name="Income"
+              value={formData.Income}
+              onChange={handleChange}
+              step="any"
+              required
+              placeholder="e.g. 50000"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="LoanAmount">Loan Amount ($)</label>
+            <input
+              id="LoanAmount"
+              type="number"
+              name="LoanAmount"
+              value={formData.LoanAmount}
+              onChange={handleChange}
+              step="any"
+              required
+              placeholder="e.g. 20000"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="InterestRate">Interest Rate (%)</label>
+            <input
+              id="InterestRate"
+              type="number"
+              name="InterestRate"
+              value={formData.InterestRate}
+              onChange={handleChange}
+              step="any"
+              required
+              placeholder="e.g. 10"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="LoanTerm">Loan Term (months)</label>
+            <input
+              id="LoanTerm"
+              type="number"
+              name="LoanTerm"
+              value={formData.LoanTerm}
+              onChange={handleChange}
+              step="any"
+              required
+              placeholder="e.g. 36"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="DTIRatio">Debt-to-Income Ratio</label>
+            <input
+              id="DTIRatio"
+              type="number"
+              name="DTIRatio"
+              value={formData.DTIRatio}
+              onChange={handleChange}
+              step="0.01"
+              required
+              placeholder="e.g. 0.30"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="LoanPurpose">Loan Purpose</label>
+            <select
+              id="LoanPurpose"
+              name="LoanPurpose"
+              value={formData.LoanPurpose}
+              onChange={handleChange}
+            >
+              {["Home", "Auto", "Education", "Business", "Other"].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="HasMortgage">Has Mortgage</label>
+            <select
+              id="HasMortgage"
+              name="HasMortgage"
+              value={formData.HasMortgage}
+              onChange={handleChange}
+            >
+              {["Yes", "No"].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Employment & Credit Profile */}
+      <div className="form-section">
+        <h3 className="form-section-title">
+          {sectionIcons.employment}
+          Employment &amp; Credit Profile
+        </h3>
+        <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="EmploymentType">Employment Type</label>
+            <select
+              id="EmploymentType"
+              name="EmploymentType"
+              value={formData.EmploymentType}
+              onChange={handleChange}
+            >
+              {["Full-time", "Part-time", "Self-employed", "Unemployed"].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label htmlFor="MonthsEmployed">Months Employed</label>
+            <input
+              id="MonthsEmployed"
+              type="number"
+              name="MonthsEmployed"
+              value={formData.MonthsEmployed}
+              onChange={handleChange}
+              step="any"
+              required
+              placeholder="e.g. 24"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="CreditScore">Credit Score</label>
+            <input
+              id="CreditScore"
+              type="number"
+              name="CreditScore"
+              value={formData.CreditScore}
+              onChange={handleChange}
+              step="any"
+              required
+              placeholder="e.g. 650"
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="NumCreditLines">Number of Credit Lines</label>
+            <input
+              id="NumCreditLines"
+              type="number"
+              name="NumCreditLines"
+              value={formData.NumCreditLines}
+              onChange={handleChange}
+              step="any"
+              required
+              placeholder="e.g. 2"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Details */}
+      <div className="form-section">
+        <h3 className="form-section-title">
+          {sectionIcons.additional}
+          Additional Details
+        </h3>
+        <div className="form-grid">
+          <div className="form-group">
+            <label htmlFor="HasCoSigner">Has Co-Signer</label>
+            <select
+              id="HasCoSigner"
+              name="HasCoSigner"
+              value={formData.HasCoSigner}
+              onChange={handleChange}
+            >
+              {["Yes", "No"].map((opt) => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Submit */}
+      <div className="form-submit-wrapper">
+        <button type="submit" className="predict-btn" disabled={loading}>
+          {loading ? (
+            <>
+              <span className="spinner" />
+              Analyzing...
+            </>
+          ) : (
+            <>
+              {sectionIcons.predict}
+              Predict Default Risk
+            </>
+          )}
+        </button>
+      </div>
     </form>
   );
 }

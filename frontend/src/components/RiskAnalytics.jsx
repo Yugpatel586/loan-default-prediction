@@ -14,13 +14,54 @@ import {
 } from "recharts";
 import "./RiskAnalytics.css";
 
-function RiskAnalytics({ history = [] }) {
-  const colors = {
-    High: "#ef4444",
-    Medium: "#f59e0b",
-    Low: "#22c55e",
-  };
+const RISK_COLORS = {
+  High: "#dc2626",
+  Medium: "#d97706",
+  Low: "#16a34a",
+};
 
+const BAR_COLORS = ["#2563eb", "#dc2626"];
+
+function CustomTooltipPie({ active, payload }) {
+  if (active && payload && payload.length) {
+    const data = payload[0];
+    return (
+      <div className="chart-tooltip">
+        <span className="chart-tooltip-dot" style={{ background: data.payload.fill || RISK_COLORS[data.name] }} />
+        <span className="chart-tooltip-label">{data.name}</span>
+        <strong className="chart-tooltip-value">{data.value}</strong>
+      </div>
+    );
+  }
+  return null;
+}
+
+function CustomTooltipBar({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="chart-tooltip">
+        <span className="chart-tooltip-label">{label}</span>
+        <strong className="chart-tooltip-value">{payload[0].value} applicants</strong>
+      </div>
+    );
+  }
+  return null;
+}
+
+function ChartLegend({ payload }) {
+  return (
+    <div className="chart-legend">
+      {(payload || []).map((entry) => (
+        <div key={entry.value} className="chart-legend-item">
+          <span className="chart-legend-dot" style={{ background: entry.color }} />
+          <span>{entry.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function RiskAnalytics({ history = [] }) {
   // Count applicants by risk level
   const riskCounts = {
     Low: 0,
@@ -68,18 +109,20 @@ function RiskAnalytics({ history = [] }) {
 
   return (
     <section className="analytics-section">
-      <div className="analytics-heading">
-        <h2>Risk Analytics</h2>
-        <p>Summary of saved loan predictions</p>
-      </div>
-
       <div className="charts-grid">
-        {/* Risk Pie Chart */}
+        {/* Risk Donut Chart */}
         <div className="chart-card">
-          <h3>Risk Distribution</h3>
+          <div className="chart-card-header">
+            <h3>Risk Distribution</h3>
+            <span className="chart-card-badge">{history.length} total</span>
+          </div>
 
           {riskData.length === 0 ? (
             <div className="chart-empty">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" width="40" height="40">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                <path d="M22 12A10 10 0 0 0 12 2v10z" />
+              </svg>
               <p>No risk data available yet.</p>
               <p>Submit a prediction to populate this chart.</p>
             </div>
@@ -93,7 +136,10 @@ function RiskAnalytics({ history = [] }) {
                     nameKey="name"
                     cx="50%"
                     cy="45%"
+                    innerRadius={55}
                     outerRadius={90}
+                    paddingAngle={3}
+                    cornerRadius={4}
                     label={({ name, percent }) =>
                       `${name} ${(percent * 100).toFixed(0)}%`
                     }
@@ -101,12 +147,13 @@ function RiskAnalytics({ history = [] }) {
                     {riskData.map((entry) => (
                       <Cell
                         key={entry.name}
-                        fill={colors[entry.name]}
+                        fill={RISK_COLORS[entry.name]}
+                        stroke="none"
                       />
                     ))}
                   </Pie>
-                  <Tooltip />
-                  <Legend verticalAlign="bottom" />
+                  <Tooltip content={<CustomTooltipPie />} />
+                  <Legend content={<ChartLegend />} verticalAlign="bottom" />
                 </PieChart>
               </ResponsiveContainer>
             </div>
@@ -115,35 +162,47 @@ function RiskAnalytics({ history = [] }) {
 
         {/* Prediction Bar Chart */}
         <div className="chart-card">
-          <h3>Prediction Distribution</h3>
+          <div className="chart-card-header">
+            <h3>Prediction Distribution</h3>
+            <span className="chart-card-badge">Binary outcome</span>
+          </div>
 
           <div className="chart-container">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={predictionData}
                 margin={{
-                  top: 15,
-                  right: 15,
+                  top: 20,
+                  right: 20,
                   left: 0,
-                  bottom: 35,
+                  bottom: 20,
                 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
                 <XAxis
                   dataKey="name"
                   interval={0}
-                  angle={-10}
-                  textAnchor="end"
-                  tick={{ fontSize: 10 }}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
+                  axisLine={{ stroke: "#e2e8f0" }}
+                  tickLine={false}
                 />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
+                <YAxis
+                  allowDecimals={false}
+                  tick={{ fontSize: 12, fill: "#64748b" }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip content={<CustomTooltipBar />} />
                 <Bar
                   dataKey="count"
                   name="Applicants"
-                  fill="#2563eb"
                   radius={[6, 6, 0, 0]}
-                />
+                  barSize={48}
+                >
+                  {predictionData.map((entry, index) => (
+                    <Cell key={entry.name} fill={BAR_COLORS[index]} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
