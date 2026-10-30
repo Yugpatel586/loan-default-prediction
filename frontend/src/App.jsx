@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import ApplicationForm from "./components/ApplicationForm";
 import PredictionResult from "./components/PredictionResult";
 import RiskAnalytics from "./components/RiskAnalytics";
+import ApplicationManagement from "./components/ApplicationManagement";
 import "./App.css";
 
 function App() {
@@ -182,7 +183,7 @@ function App() {
     URL.revokeObjectURL(url);
   };
 
-  // --- Inline SVG icons ---
+  // Inline SVG icons
   const icons = {
     dashboard: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -192,6 +193,7 @@ function App() {
         <rect x="14" y="14" width="7" height="7" rx="1" />
       </svg>
     ),
+
     prediction: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
@@ -201,6 +203,16 @@ function App() {
         <path d="M10 9H8" />
       </svg>
     ),
+
+    applications: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+      </svg>
+    ),
+
     total: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -209,6 +221,7 @@ function App() {
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
     ),
+
     highRisk: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
@@ -216,12 +229,14 @@ function App() {
         <path d="M12 17h.01" />
       </svg>
     ),
+
     lowRisk: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
         <path d="m9 12 2 2 4-4" />
       </svg>
     ),
+
     percent: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="19" y1="5" x2="5" y2="19" />
@@ -229,6 +244,7 @@ function App() {
         <circle cx="17.5" cy="17.5" r="2.5" />
       </svg>
     ),
+
     download: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -236,12 +252,14 @@ function App() {
         <line x1="12" y1="15" x2="12" y2="3" />
       </svg>
     ),
+
     plus: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="12" y1="5" x2="12" y2="19" />
         <line x1="5" y1="12" x2="19" y2="12" />
       </svg>
     ),
+
     menu: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="4" y1="6" x2="20" y2="6" />
@@ -249,17 +267,20 @@ function App() {
         <line x1="4" y1="18" x2="20" y2="18" />
       </svg>
     ),
+
     close: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" />
         <line x1="6" y1="6" x2="18" y2="18" />
       </svg>
     ),
+
     shield: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
     ),
+
     empty: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
@@ -267,17 +288,11 @@ function App() {
         <path d="M9 15h6" />
       </svg>
     ),
-    analytics: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10" />
-        <line x1="12" y1="20" x2="12" y2="4" />
-        <line x1="6" y1="20" x2="6" y2="14" />
-      </svg>
-    ),
   };
 
   return (
     <div className="dashboard">
+
       {/* Mobile menu button */}
       <button
         className="mobile-menu-btn"
@@ -304,6 +319,7 @@ function App() {
         </div>
 
         <nav className="sidebar-nav">
+
           <button
             className={activePage === "overview" ? "active" : ""}
             onClick={() => navigateTo("overview")}
@@ -319,6 +335,15 @@ function App() {
             {icons.prediction}
             New Prediction
           </button>
+
+          <button
+            className={activePage === "applications" ? "active" : ""}
+            onClick={() => navigateTo("applications")}
+          >
+            {icons.applications}
+            Loan Applications
+          </button>
+
         </nav>
 
         <div className="sidebar-profile">
@@ -332,14 +357,19 @@ function App() {
 
       {/* Main Content */}
       <main className="main-content">
+
+        {/* Dashboard Overview */}
         {activePage === "overview" && (
           <section>
-            {/* Welcome Banner */}
+
             <div className="welcome-banner">
               <h2>Welcome to CreditRisk AI Dashboard</h2>
               <p>
-                Monitor loan default predictions, analyze risk distributions, and make data-driven credit decisions with machine learning.
+                Monitor loan default predictions, analyze risk
+                distributions, and make data-driven credit decisions
+                with machine learning.
               </p>
+
               <div className="welcome-banner-actions">
                 <button
                   className="welcome-btn welcome-btn-primary"
@@ -348,6 +378,7 @@ function App() {
                   {icons.plus}
                   New Prediction
                 </button>
+
                 <button
                   className="welcome-btn welcome-btn-secondary"
                   onClick={exportToCSV}
@@ -360,13 +391,16 @@ function App() {
 
             {/* KPI Cards */}
             <div className="stats-grid">
+
               <div className="stat-card">
                 <div className="stat-card-header">
                   <p>Total Predictions</p>
                   <div className="stat-icon blue">{icons.total}</div>
                 </div>
                 <h2>{totalPredictions}</h2>
-                <span className="stat-subtitle">All time analyses</span>
+                <span className="stat-subtitle">
+                  All time analyses
+                </span>
               </div>
 
               <div className="stat-card">
@@ -401,17 +435,21 @@ function App() {
                   <div className="stat-icon amber">{icons.percent}</div>
                 </div>
                 <h2>{averageProbability}%</h2>
-                <span className="stat-subtitle">Across all predictions</span>
+                <span className="stat-subtitle">
+                  Across all predictions
+                </span>
               </div>
+
             </div>
 
-            {/* Risk distribution pie chart and prediction bar chart */}
+            {/* Risk Analytics */}
             <RiskAnalytics history={history} />
 
-            {/* Recent Predictions Table */}
+            {/* Recent Predictions */}
             <div className="table-section">
               <div className="history-header">
                 <h2>Recent Predictions</h2>
+
                 <button
                   className="export-btn"
                   onClick={exportToCSV}
@@ -424,7 +462,10 @@ function App() {
               {history.length === 0 ? (
                 <div className="empty-message">
                   {icons.empty}
-                  <p>No predictions yet. Create a new prediction to see your results here.</p>
+                  <p>
+                    No predictions yet. Create a new prediction
+                    to see your results here.
+                  </p>
                 </div>
               ) : (
                 <div className="table-container">
@@ -462,15 +503,18 @@ function App() {
                 </div>
               )}
             </div>
+
           </section>
         )}
 
+        {/* New Prediction Page */}
         {activePage === "prediction" && (
           <section>
             <div className="page-header">
               <h1>New Loan Prediction</h1>
               <p>
-                Enter applicant details to estimate default probability and risk level.
+                Enter applicant details to estimate default probability
+                and risk level.
               </p>
             </div>
 
@@ -488,6 +532,12 @@ function App() {
             )}
           </section>
         )}
+
+        {/* Loan Applications Page */}
+        {activePage === "applications" && (
+          <ApplicationManagement />
+        )}
+
       </main>
     </div>
   );
