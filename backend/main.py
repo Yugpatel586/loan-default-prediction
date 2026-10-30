@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from backend.applications_db import get_connection, log_history
-
+from datetime import date
 
 # Locate the saved ML model relative to this file
 BASE_DIR = Path(__file__).resolve().parent
@@ -435,4 +435,147 @@ def get_application_history(case_id: str):
     return {
         "case_id": case_id,
         "history": history,
+    }
+
+
+# ---------------- FEATURE 2: RISK ANALYTICS ----------------
+
+@app.get("/analytics/dashboard")
+def get_dashboard_analytics(
+    date_from: str | None = Query(default=None),
+    date_to: str | None = Query(default=None),
+    risk_level: str | None = Query(default=None)
+):
+    # Validate dates
+    try:
+        if date_from:
+            date.fromisoformat(date_from)
+
+        if date_to:
+            date.fromisoformat(date_to)
+
+        if date_from and date_to and date_from > date_to:
+            raise ValueError("Start date cannot be after end date")
+
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+    # Validate risk level
+    allowed_risks = ["Low", "Medium", "High"]
+
+    if risk_level and risk_level not in allowed_risks:
+        raise HTTPException(
+            status_code=400,
+            detail="Risk level must be Low, Medium, or High"
+        )
+
+    conditions = []
+    params = []
+
+    if date_from:
+        conditions.append("DATE(created_at) >= DATE(?)")
+        params.append(date_from)
+
+    if date_to:
+        conditions.append("DATE(created_at) <= DATE(?)")
+        params.append(date_to)
+
+    if risk_level:
+        conditions.append("risk_level = ?")
+        params.append(risk_level)
+
+    where_clause = (
+        "WHERE " + " AND ".join(conditions)
+        if conditions else ""
+    )
+
+    with get_connection() as conn:
+
+        # Overall statistics
+        overall = conn.execute(f"""
+            SELECT
+                COUNT(*) AS total_applications,
+
+                SUM(CASE
+                    WHEN review_status IN ('Pending', 'Under Review')
+                    THEN 1 ELSE 0
+                END) AS pending_reviews,
+
+                SUM(CASE
+                    WHEN review_status = 'Approved'
+                    THEN 1 ELSE 0
+                END) AS approved_applications,
+
+                SUM(CASE
+                    WHEN review_status = 'Rejected'
+                    THEN 1 ELSE 0
+                END) AS rejected_applications,
+
+                ROUND(AVG(default_probability), 2)
+                    AS average_default_probability
+
+            FROM applications
+            {where_clause}
+        """, params).fetchone()
+
+        # Risk distribution
+        risk_rows = conn.execute(f"""
+            SELECT risk_level, COUNT(*) AS count
+            FROM applications
+            {where_clause}
+            GROUP BY risk_level
+        """, params).fetchall()
+
+        # Application status distribution
+        status_rows = conn.execute(f"""
+            SELECT review_status, COUNT(*) AS count
+            FROM applications
+            {where_clause}
+            GROUP BY review_status
+        """, params).fetchall()
+
+        # Application trend
+        trend_rows = conn.execute(f"""
+            SELECT
+                DATE(created_at) AS application_date,
+                COUNT(*) AS count
+            FROM applications
+            {where_clause}
+            GROUP BY DATE(created_at)
+            ORDER BY application_date ASC
+        """, params).fetchall()
+
+    return {
+        "overview": {
+            "total_applications": overall["total_applications"] or 0,
+            "pending_reviews": overall["pending_reviews"] or 0,
+            "approved_applications": overall["approved_applications"] or 0,
+            "rejected_applications": overall["rejected_applications"] or 0,
+            "average_default_probability":
+                overall["average_default_probability"] or 0
+        },
+
+        "risk_distribution": [
+            {
+                "risk_level": row["risk_level"],
+                "count": row["count"]
+            }
+            for row in risk_rows
+        ],
+
+        "status_distribution": [
+            {
+                "status": row["review_status"],
+                "count": row["count"]
+            }
+            for row in status_rows
+        ],
+
+        "application_trend": [
+            {
+                "date": row["application_date"],
+                "count": row["count"]
+            }
+            for row in trend_rows
+        ]
     }

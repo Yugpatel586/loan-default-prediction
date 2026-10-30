@@ -4,6 +4,7 @@ import ApplicationForm from "./components/ApplicationForm";
 import PredictionResult from "./components/PredictionResult";
 import RiskAnalytics from "./components/RiskAnalytics";
 import ApplicationManagement from "./components/ApplicationManagement";
+import AnalyticsDashboard from "./components/AnalyticsDashboard";
 import "./App.css";
 
 function App() {
@@ -213,6 +214,13 @@ function App() {
       </svg>
     ),
 
+    analytics: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 3v18h18" />
+        <path d="m19 9-5 5-4-4-5 5" />
+      </svg>
+    ),
+
     total: (
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
@@ -342,6 +350,14 @@ function App() {
           >
             {icons.applications}
             Loan Applications
+          </button>
+
+          <button
+            className={activePage === "analytics" ? "active" : ""}
+            onClick={() => navigateTo("analytics")}
+          >
+            {icons.analytics}
+            Risk Analytics
           </button>
 
         </nav>
@@ -536,6 +552,12 @@ function App() {
         {/* Loan Applications Page */}
         {activePage === "applications" && (
           <ApplicationManagement />
+        )}
+
+
+        {/* Risk Analytics Page */}
+        {activePage === "analytics" && (
+          <AnalyticsDashboard />
         )}
 
       </main>

@@ -1232,3 +1232,235 @@ tbody tr:last-child td {
     min-width: 130px;
   }
 }
+
+/* ================================
+   FEATURE 2: RISK ANALYTICS DASHBOARD
+================================ */
+
+.analytics-dashboard {
+  width: 100%;
+  padding: 24px;
+  color: #172033;
+  box-sizing: border-box;
+}
+
+.analytics-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.analytics-header h1 {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: #172033;
+}
+
+.analytics-header p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+.analytics-header button {
+  padding: 11px 18px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.analytics-header button:hover {
+  background: #1d4ed8;
+}
+
+.analytics-cards {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.analytics-card {
+  background: #ffffff;
+  padding: 22px;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  min-width: 0;
+}
+
+.analytics-card h3 {
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 0 14px;
+}
+
+.analytics-card h2 {
+  color: #172033;
+  font-size: 27px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.analytics-charts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 22px;
+}
+
+.analytics-chart-card {
+  background: #ffffff;
+  padding: 22px;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+  min-width: 0;
+}
+
+.analytics-chart-card h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: #172033;
+  margin: 0 0 20px;
+}
+
+.analytics-trend-card {
+  grid-column: 1 / -1;
+}
+
+.analytics-dashboard button {
+  transition: background 0.2s ease;
+}
+
+@media (max-width: 1200px) {
+  .analytics-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-dashboard {
+    padding: 16px;
+  }
+
+  .analytics-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .analytics-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .analytics-trend-card {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .analytics-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Analytics Filter Section */
+
+.analytics-filters {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 20px;
+  margin-bottom: 25px;
+  background: #ffffff;
+  border: 1px solid #e5eaf1;
+  border-radius: 12px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.filter-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+}
+
+.filter-group input,
+.filter-group select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1px solid #dbe2ea;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172033;
+  font-size: 14px;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: #2563eb;
+}
+
+.filter-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.apply-filter-btn,
+.reset-filter-btn {
+  padding: 11px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.apply-filter-btn {
+  background: #2563eb;
+  color: #ffffff;
+}
+
+.reset-filter-btn {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.apply-filter-btn:disabled,
+.reset-filter-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 768px) {
+  .analytics-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-actions {
+    width: 100%;
+  }
+
+  .filter-actions button {
+    flex: 1;
+  }
+}
