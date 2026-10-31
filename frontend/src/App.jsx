@@ -38,21 +38,22 @@ function App() {
     }
   }, [history]);
 
-  // Close sidebar on page change (mobile)
+  // Close sidebar on page change
   const navigateTo = (page) => {
     setActivePage(page);
     setSidebarOpen(false);
   };
 
-  // Submit applicant details to FastAPI
+  // Submit applicant details and create application
   const handlePrediction = async (formData) => {
     setLoading(true);
     setError("");
     setPrediction(null);
 
     try {
+      // Send complete application to FastAPI
       const response = await fetch(
-        "http://127.0.0.1:8000/predict",
+        "http://127.0.0.1:8000/applications",
         {
           method: "POST",
           headers: {
@@ -63,53 +64,61 @@ function App() {
       );
 
       if (!response.ok) {
-        const message = await response.text();
+        let message;
+
+        try {
+          const errorData = await response.json();
+          message =
+            errorData.detail || JSON.stringify(errorData);
+        } catch {
+          message = await response.text();
+        }
+
         throw new Error(
-          `Prediction failed (${response.status}): ${message}`
+          `Application creation failed (${response.status}): ${message}`
         );
       }
 
       const result = await response.json();
 
+      // Display prediction result
       setPrediction(result);
 
-      const rawProbability =
-        result.default_probability ??
-        result.probability ??
-        0;
+      // Convert probability to a number
+      const probability = Number(
+        result.default_probability ?? 0
+      );
 
-      // The current FastAPI returns probability as a percentage.
-      const probability = Number(rawProbability);
+      // Format prediction result
+      const predictionLabel =
+        result.prediction === 1
+          ? "Likely to Default"
+          : "Unlikely to Default";
 
+      // Add successful application to local dashboard history
       const newRecord = {
-        id: `${Date.now()}-${Math.random()}`,
+        id: result.case_id,
+        caseId: result.case_id,
+        applicantReference: formData.applicant_reference,
+        assignedOfficerId: result.assigned_officer_id,
         date: new Date().toLocaleString(),
         probability: Number.isFinite(probability)
           ? probability
           : 0,
-        riskLevel:
-          result.risk_level ??
-          result.riskLevel ??
-          "Unknown",
-        prediction:
-          result.prediction === 1 ||
-          result.predicted_class === 1
-            ? "Likely to Default"
-            : result.prediction === 0 ||
-                result.predicted_class === 0
-              ? "Unlikely to Default"
-              : String(
-                  result.prediction ??
-                  result.predicted_class ??
-                  "Unknown"
-                ),
+        riskLevel: result.risk_level ?? "Unknown",
+        prediction: predictionLabel,
       };
 
       setHistory((previous) => [newRecord, ...previous]);
+
     } catch (err) {
+      console.error("Application creation error:", err);
+
       setError(
-        err.message || "Unable to connect to the prediction server."
+        err.message ||
+        "Unable to connect to the application server."
       );
+
     } finally {
       setLoading(false);
     }
@@ -145,6 +154,9 @@ function App() {
     }
 
     const headers = [
+      "Case ID",
+      "Applicant Reference",
+      "Assigned Officer",
       "Date",
       "Prediction",
       "Default Probability (%)",
@@ -152,6 +164,9 @@ function App() {
     ];
 
     const rows = history.map((item) => [
+      item.caseId || item.id,
+      item.applicantReference || "",
+      item.assignedOfficerId || "",
       item.date,
       item.prediction,
       item.probability,
@@ -177,17 +192,20 @@ function App() {
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = "loan_prediction_history.csv";
+    link.download = "loan_application_history.csv";
+
     document.body.appendChild(link);
     link.click();
     link.remove();
+
     URL.revokeObjectURL(url);
   };
 
   // Inline SVG icons
   const icons = {
     dashboard: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1" />
         <rect x="14" y="3" width="7" height="7" rx="1" />
         <rect x="3" y="14" width="7" height="7" rx="1" />
@@ -196,7 +214,8 @@ function App() {
     ),
 
     prediction: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
         <path d="M14 2v6h6" />
         <path d="M16 13H8" />
@@ -206,7 +225,8 @@ function App() {
     ),
 
     applications: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -215,14 +235,16 @@ function App() {
     ),
 
     analytics: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 3v18h18" />
         <path d="m19 9-5 5-4-4-5 5" />
       </svg>
     ),
 
     total: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
         <circle cx="9" cy="7" r="4" />
         <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
@@ -231,7 +253,8 @@ function App() {
     ),
 
     highRisk: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
         <path d="M12 9v4" />
         <path d="M12 17h.01" />
@@ -239,14 +262,16 @@ function App() {
     ),
 
     lowRisk: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" />
         <path d="m9 12 2 2 4-4" />
       </svg>
     ),
 
     percent: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="19" y1="5" x2="5" y2="19" />
         <circle cx="6.5" cy="6.5" r="2.5" />
         <circle cx="17.5" cy="17.5" r="2.5" />
@@ -254,7 +279,8 @@ function App() {
     ),
 
     download: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
         <polyline points="7 10 12 15 17 10" />
         <line x1="12" y1="15" x2="12" y2="3" />
@@ -262,14 +288,16 @@ function App() {
     ),
 
     plus: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="12" y1="5" x2="12" y2="19" />
         <line x1="5" y1="12" x2="19" y2="12" />
       </svg>
     ),
 
     menu: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="4" y1="6" x2="20" y2="6" />
         <line x1="4" y1="12" x2="20" y2="12" />
         <line x1="4" y1="18" x2="20" y2="18" />
@@ -277,20 +305,23 @@ function App() {
     ),
 
     close: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="18" y1="6" x2="6" y2="18" />
         <line x1="6" y1="6" x2="18" y2="18" />
       </svg>
     ),
 
     shield: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
       </svg>
     ),
 
     empty: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z" />
         <path d="M14 2v6h6" />
         <path d="M9 15h6" />
@@ -318,6 +349,7 @@ function App() {
 
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
+
         <div className="sidebar-brand">
           <h2>
             <span className="brand-icon">{icons.shield}</span>
@@ -369,6 +401,7 @@ function App() {
             <span>Credit Risk Dept.</span>
           </div>
         </div>
+
       </aside>
 
       {/* Main Content */}
@@ -380,6 +413,7 @@ function App() {
 
             <div className="welcome-banner">
               <h2>Welcome to CreditRisk AI Dashboard</h2>
+
               <p>
                 Monitor loan default predictions, analyze risk
                 distributions, and make data-driven credit decisions
@@ -387,6 +421,7 @@ function App() {
               </p>
 
               <div className="welcome-banner-actions">
+
                 <button
                   className="welcome-btn welcome-btn-primary"
                   onClick={() => navigateTo("prediction")}
@@ -402,6 +437,7 @@ function App() {
                   {icons.download}
                   Export Report
                 </button>
+
               </div>
             </div>
 
@@ -410,12 +446,12 @@ function App() {
 
               <div className="stat-card">
                 <div className="stat-card-header">
-                  <p>Total Predictions</p>
+                  <p>Total Applications</p>
                   <div className="stat-icon blue">{icons.total}</div>
                 </div>
                 <h2>{totalPredictions}</h2>
                 <span className="stat-subtitle">
-                  All time analyses
+                  All time applications
                 </span>
               </div>
 
@@ -452,7 +488,7 @@ function App() {
                 </div>
                 <h2>{averageProbability}%</h2>
                 <span className="stat-subtitle">
-                  Across all predictions
+                  Across all applications
                 </span>
               </div>
 
@@ -461,10 +497,11 @@ function App() {
             {/* Risk Analytics */}
             <RiskAnalytics history={history} />
 
-            {/* Recent Predictions */}
+            {/* Recent Applications */}
             <div className="table-section">
+
               <div className="history-header">
-                <h2>Recent Predictions</h2>
+                <h2>Recent Applications</h2>
 
                 <button
                   className="export-btn"
@@ -479,16 +516,18 @@ function App() {
                 <div className="empty-message">
                   {icons.empty}
                   <p>
-                    No predictions yet. Create a new prediction
+                    No applications yet. Create a new application
                     to see your results here.
                   </p>
                 </div>
               ) : (
                 <div className="table-container">
+
                   <table>
                     <thead>
                       <tr>
-                        <th>Date</th>
+                        <th>Case ID</th>
+                        <th>Applicant Reference</th>
                         <th>Prediction</th>
                         <th>Default Probability</th>
                         <th>Risk Level</th>
@@ -498,7 +537,8 @@ function App() {
                     <tbody>
                       {history.slice(0, 10).map((item) => (
                         <tr key={item.id}>
-                          <td>{item.date}</td>
+                          <td>{item.caseId || item.id}</td>
+                          <td>{item.applicantReference || "-"}</td>
                           <td>{item.prediction}</td>
                           <td>
                             {Number(item.probability).toFixed(2)}%
@@ -516,8 +556,10 @@ function App() {
                       ))}
                     </tbody>
                   </table>
+
                 </div>
               )}
+
             </div>
 
           </section>
@@ -526,11 +568,13 @@ function App() {
         {/* New Prediction Page */}
         {activePage === "prediction" && (
           <section>
+
             <div className="page-header">
               <h1>New Loan Prediction</h1>
               <p>
                 Enter applicant details to estimate default probability
-                and risk level.
+                and risk level. Each successful prediction creates a
+                loan application automatically.
               </p>
             </div>
 
@@ -546,6 +590,7 @@ function App() {
             {prediction && (
               <PredictionResult result={prediction} />
             )}
+
           </section>
         )}
 
@@ -553,7 +598,6 @@ function App() {
         {activePage === "applications" && (
           <ApplicationManagement />
         )}
-
 
         {/* Risk Analytics Page */}
         {activePage === "analytics" && (

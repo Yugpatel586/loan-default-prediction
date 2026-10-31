@@ -2,6 +2,7 @@
 import json
 from pathlib import Path
 from uuid import uuid4
+from datetime import date
 
 import joblib
 import pandas as pd
@@ -11,23 +12,24 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from backend.applications_db import get_connection, log_history
-from datetime import date
 
-# Locate the saved ML model relative to this file
+
+# ---------------- LOAD SAVED ML MODEL ----------------
+
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_PATH = BASE_DIR.parent / "ml" / "final_loan_default_pipeline.pkl"
 
-# Load the trained pipeline
 model = joblib.load(MODEL_PATH)
 
-# Initialize FastAPI
+
+# ---------------- INITIALIZE FASTAPI ----------------
+
 app = FastAPI(
     title="Loan Default Prediction API",
     description="API for predicting loan default risk and managing loan applications",
     version="1.0.0"
 )
 
-# Allow requests from the local React development server
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173"],
@@ -58,7 +60,7 @@ class Applicant(BaseModel):
     HasCoSigner: str
 
 
-# ---------------- EXISTING ENDPOINTS ----------------
+# ---------------- HOME ENDPOINT ----------------
 
 @app.get("/")
 def home():
@@ -67,15 +69,16 @@ def home():
     }
 
 
+# ---------------- STANDALONE PREDICTION ENDPOINT ----------------
+
 @app.post("/predict")
 def predict(applicant: Applicant):
+
     applicant_df = pd.DataFrame([applicant.model_dump()])
 
-    # Predict class and default probability
     prediction = int(model.predict(applicant_df)[0])
     probability = float(model.predict_proba(applicant_df)[0][1])
 
-    # Current illustrative risk bands
     if probability < 0.30:
         risk_level = "Low"
     elif probability < 0.60:
@@ -95,6 +98,7 @@ def predict(applicant: Applicant):
 class ApplicationCreate(BaseModel):
     applicant_reference: str = Field(min_length=1, max_length=100)
     applicant: Applicant
+    assigned_officer_id: str | None = None
 
 
 class StatusUpdate(BaseModel):
@@ -124,9 +128,11 @@ def create_application(data: ApplicationCreate):
     applicant_data = data.applicant.model_dump()
     applicant_df = pd.DataFrame([applicant_data])
 
+    # Generate ML prediction
     prediction = int(model.predict(applicant_df)[0])
     probability = float(model.predict_proba(applicant_df)[0][1]) * 100
 
+    # Classify risk
     if probability < 30:
         risk_level = "Low"
     elif probability < 60:
@@ -134,8 +140,10 @@ def create_application(data: ApplicationCreate):
     else:
         risk_level = "High"
 
+    # Generate unique application ID
     case_id = f"APP-{uuid4().hex[:8].upper()}"
 
+    # Save application and officer assignment together
     with get_connection() as conn:
 
         conn.execute(
@@ -146,20 +154,25 @@ def create_application(data: ApplicationCreate):
                 input_snapshot,
                 prediction,
                 default_probability,
-                risk_level
+                risk_level,
+                assigned_officer_id
             )
-            VALUES (?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 case_id,
-                data.applicant_reference,
+                data.applicant_reference.strip(),
                 json.dumps(applicant_data),
                 prediction,
                 round(probability, 2),
                 risk_level,
+                data.assigned_officer_id.strip()
+                if data.assigned_officer_id
+                else None,
             ),
         )
 
+        # Record application creation
         log_history(
             conn,
             case_id,
@@ -170,6 +183,16 @@ def create_application(data: ApplicationCreate):
             },
         )
 
+        # Record initial officer assignment
+        if data.assigned_officer_id and data.assigned_officer_id.strip():
+            log_history(
+                conn,
+                case_id,
+                "Officer Assigned",
+                new_value=data.assigned_officer_id.strip(),
+                changed_by="Analyst",
+            )
+
     return {
         "message": "Application created successfully",
         "case_id": case_id,
@@ -177,6 +200,11 @@ def create_application(data: ApplicationCreate):
         "default_probability": round(probability, 2),
         "risk_level": risk_level,
         "review_status": "Pending",
+        "assigned_officer_id": (
+            data.assigned_officer_id.strip()
+            if data.assigned_officer_id
+            else None
+        ),
     }
 
 
@@ -446,6 +474,7 @@ def get_dashboard_analytics(
     date_to: str | None = Query(default=None),
     risk_level: str | None = Query(default=None)
 ):
+
     # Validate dates
     try:
         if date_from:

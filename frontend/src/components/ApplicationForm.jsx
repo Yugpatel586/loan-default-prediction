@@ -2,6 +2,9 @@
 import { useState } from "react";
 
 function ApplicationForm({ onSubmit, loading }) {
+  const [applicantReference, setApplicantReference] = useState("");
+  const [assignedOfficerId, setAssignedOfficerId] = useState("");
+
   const [formData, setFormData] = useState({
     Age: 25,
     Income: 50000,
@@ -23,6 +26,7 @@ function ApplicationForm({ onSubmit, loading }) {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -33,9 +37,15 @@ function ApplicationForm({ onSubmit, loading }) {
     e.preventDefault();
 
     const numericFields = [
-      "Age", "Income", "LoanAmount", "CreditScore",
-      "MonthsEmployed", "NumCreditLines", "InterestRate",
-      "LoanTerm", "DTIRatio",
+      "Age",
+      "Income",
+      "LoanAmount",
+      "CreditScore",
+      "MonthsEmployed",
+      "NumCreditLines",
+      "InterestRate",
+      "LoanTerm",
+      "DTIRatio",
     ];
 
     const applicant = { ...formData };
@@ -44,38 +54,51 @@ function ApplicationForm({ onSubmit, loading }) {
       applicant[field] = Number(applicant[field]);
     });
 
-    onSubmit(applicant);
+    onSubmit({
+      applicant_reference: applicantReference.trim(),
+      assigned_officer_id: assignedOfficerId.trim() || null,
+      applicant,
+    });
   };
 
-  // --- SVG icons for section headers ---
+  // SVG icons
   const sectionIcons = {
     personal: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
         <circle cx="12" cy="7" r="4" />
       </svg>
     ),
+
     financial: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="12" y1="1" x2="12" y2="23" />
         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
       </svg>
     ),
+
     employment: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
         <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
       </svg>
     ),
+
     additional: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />
         <path d="M12 16v-4" />
         <path d="M12 8h.01" />
       </svg>
     ),
+
     predict: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
       </svg>
     ),
@@ -83,13 +106,59 @@ function ApplicationForm({ onSubmit, loading }) {
 
   return (
     <form onSubmit={handleSubmit} className="applicant-form">
+
+      {/* Application Details */}
+      <div className="form-section">
+        <h3 className="form-section-title">
+          {sectionIcons.additional}
+          Application Details
+        </h3>
+
+        <div className="form-grid">
+
+          <div className="form-group">
+            <label htmlFor="applicantReference">
+              Applicant Reference ID
+            </label>
+
+            <input
+              id="applicantReference"
+              type="text"
+              value={applicantReference}
+              onChange={(e) => setApplicantReference(e.target.value)}
+              placeholder="e.g. APP-REF-001"
+              maxLength={100}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="assignedOfficerId">
+              Assigned Officer ID (Optional)
+            </label>
+
+            <input
+              id="assignedOfficerId"
+              type="text"
+              value={assignedOfficerId}
+              onChange={(e) => setAssignedOfficerId(e.target.value)}
+              placeholder="e.g. OFFICER-001"
+              maxLength={100}
+            />
+          </div>
+
+        </div>
+      </div>
+
       {/* Personal Information */}
       <div className="form-section">
         <h3 className="form-section-title">
           {sectionIcons.personal}
           Personal Information
         </h3>
+
         <div className="form-grid">
+
           <div className="form-group">
             <label htmlFor="Age">Age</label>
             <input
@@ -98,11 +167,12 @@ function ApplicationForm({ onSubmit, loading }) {
               name="Age"
               value={formData.Age}
               onChange={handleChange}
-              step="any"
               required
-              placeholder="e.g. 25"
+              min="18"
+              max="100"
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="Education">Education</label>
             <select
@@ -116,6 +186,7 @@ function ApplicationForm({ onSubmit, loading }) {
               ))}
             </select>
           </div>
+
           <div className="form-group">
             <label htmlFor="MaritalStatus">Marital Status</label>
             <select
@@ -129,6 +200,7 @@ function ApplicationForm({ onSubmit, loading }) {
               ))}
             </select>
           </div>
+
           <div className="form-group">
             <label htmlFor="HasDependents">Has Dependents</label>
             <select
@@ -142,6 +214,7 @@ function ApplicationForm({ onSubmit, loading }) {
               ))}
             </select>
           </div>
+
         </div>
       </div>
 
@@ -151,7 +224,9 @@ function ApplicationForm({ onSubmit, loading }) {
           {sectionIcons.financial}
           Financial Information
         </h3>
+
         <div className="form-grid">
+
           <div className="form-group">
             <label htmlFor="Income">Annual Income ($)</label>
             <input
@@ -162,9 +237,10 @@ function ApplicationForm({ onSubmit, loading }) {
               onChange={handleChange}
               step="any"
               required
-              placeholder="e.g. 50000"
+              min="0"
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="LoanAmount">Loan Amount ($)</label>
             <input
@@ -175,9 +251,10 @@ function ApplicationForm({ onSubmit, loading }) {
               onChange={handleChange}
               step="any"
               required
-              placeholder="e.g. 20000"
+              min="0"
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="InterestRate">Interest Rate (%)</label>
             <input
@@ -188,9 +265,10 @@ function ApplicationForm({ onSubmit, loading }) {
               onChange={handleChange}
               step="any"
               required
-              placeholder="e.g. 10"
+              min="0"
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="LoanTerm">Loan Term (months)</label>
             <input
@@ -199,11 +277,11 @@ function ApplicationForm({ onSubmit, loading }) {
               name="LoanTerm"
               value={formData.LoanTerm}
               onChange={handleChange}
-              step="any"
               required
-              placeholder="e.g. 36"
+              min="1"
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="DTIRatio">Debt-to-Income Ratio</label>
             <input
@@ -214,9 +292,10 @@ function ApplicationForm({ onSubmit, loading }) {
               onChange={handleChange}
               step="0.01"
               required
-              placeholder="e.g. 0.30"
+              min="0"
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="LoanPurpose">Loan Purpose</label>
             <select
@@ -230,6 +309,7 @@ function ApplicationForm({ onSubmit, loading }) {
               ))}
             </select>
           </div>
+
           <div className="form-group">
             <label htmlFor="HasMortgage">Has Mortgage</label>
             <select
@@ -243,6 +323,7 @@ function ApplicationForm({ onSubmit, loading }) {
               ))}
             </select>
           </div>
+
         </div>
       </div>
 
@@ -252,7 +333,9 @@ function ApplicationForm({ onSubmit, loading }) {
           {sectionIcons.employment}
           Employment &amp; Credit Profile
         </h3>
+
         <div className="form-grid">
+
           <div className="form-group">
             <label htmlFor="EmploymentType">Employment Type</label>
             <select
@@ -266,6 +349,7 @@ function ApplicationForm({ onSubmit, loading }) {
               ))}
             </select>
           </div>
+
           <div className="form-group">
             <label htmlFor="MonthsEmployed">Months Employed</label>
             <input
@@ -274,11 +358,11 @@ function ApplicationForm({ onSubmit, loading }) {
               name="MonthsEmployed"
               value={formData.MonthsEmployed}
               onChange={handleChange}
-              step="any"
               required
-              placeholder="e.g. 24"
+              min="0"
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="CreditScore">Credit Score</label>
             <input
@@ -287,11 +371,12 @@ function ApplicationForm({ onSubmit, loading }) {
               name="CreditScore"
               value={formData.CreditScore}
               onChange={handleChange}
-              step="any"
               required
-              placeholder="e.g. 650"
+              min="0"
+              max="900"
             />
           </div>
+
           <div className="form-group">
             <label htmlFor="NumCreditLines">Number of Credit Lines</label>
             <input
@@ -300,11 +385,11 @@ function ApplicationForm({ onSubmit, loading }) {
               name="NumCreditLines"
               value={formData.NumCreditLines}
               onChange={handleChange}
-              step="any"
               required
-              placeholder="e.g. 2"
+              min="0"
             />
           </div>
+
         </div>
       </div>
 
@@ -314,7 +399,9 @@ function ApplicationForm({ onSubmit, loading }) {
           {sectionIcons.additional}
           Additional Details
         </h3>
+
         <div className="form-grid">
+
           <div className="form-group">
             <label htmlFor="HasCoSigner">Has Co-Signer</label>
             <select
@@ -328,25 +415,31 @@ function ApplicationForm({ onSubmit, loading }) {
               ))}
             </select>
           </div>
+
         </div>
       </div>
 
       {/* Submit */}
       <div className="form-submit-wrapper">
-        <button type="submit" className="predict-btn" disabled={loading}>
+        <button
+          type="submit"
+          className="predict-btn"
+          disabled={loading}
+        >
           {loading ? (
             <>
               <span className="spinner" />
-              Analyzing...
+              Creating Application...
             </>
           ) : (
             <>
               {sectionIcons.predict}
-              Predict Default Risk
+              Predict &amp; Create Application
             </>
           )}
         </button>
       </div>
+
     </form>
   );
 }
